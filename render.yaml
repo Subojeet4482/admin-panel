@@ -1,0 +1,57 @@
+services:
+  - type: web
+    name: ff-admin
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    # 1 worker + threads: bot aur backup scheduler isi process ke andar chalte hain
+    startCommand: gunicorn app:app --workers 1 --threads 8 --timeout 120 --bind 0.0.0.0:$PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      # ---- OWNER login -> MAIN panel (full access: backup/restore/delete/Fampay bot) ----
+      - key: OWNER_EMAIL
+        sync: false
+      - key: OWNER_PASSWORD
+        sync: false
+      - key: OWNER_PIN
+        sync: false
+      # ---- ADMIN login -> LITE panel (matches/wallet/users/settings, no backup/bot) ----
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_PIN
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      # ---- Login lock (galat attempts) ----
+      - key: LOGIN_MAX_FAILS
+        value: "5"
+      - key: LOGIN_LOCK_MINUTES
+        value: "60"
+      # ---- Firebase service key (base64) ----
+      - key: FIREBASE_CREDENTIALS_B64
+        sync: false
+      # ---- Fampay / Gmail bot ----
+      - key: GMAIL_CLIENT_ID
+        sync: false
+      - key: GMAIL_CLIENT_SECRET
+        sync: false
+      - key: GMAIL_REFRESH_TOKEN
+        sync: false
+      - key: POLL_INTERVAL
+        value: "15"
+      - key: BOT_AUTOSTART
+        value: "true"
+      # ---- Backup (optional) ----
+      - key: BACKUP_INTERVAL_HOURS
+        value: "24"
+      - key: BACKUP_KEEP
+        value: "10"
+      # ---- Auto-alive (RENDER_EXTERNAL_URL Render khud deta hai) ----
+      - key: KEEPALIVE
+        value: "true"
+      - key: KEEPALIVE_INTERVAL
+        value: "600"
