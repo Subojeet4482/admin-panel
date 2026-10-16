@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>FF Admin</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="toast-wrap"></div>
+
+<!-- AUTH SCREEN -->
+<div id="auth">
+  <div class="auth-wrap">
+    <div class="auth-icon">🔐</div>
+    <h2 style="font-size:1.4rem;font-weight:800;margin-bottom:6px;">FF Admin</h2>
+    <p id="a-loading" style="color:#64748b;font-size:0.85rem;margin:18px 0;"><i class="fa-solid fa-spinner fa-spin"></i> Checking session...</p>
+    <form id="login-form" class="hidden" onsubmit="event.preventDefault();A.login()" style="text-align:left;margin-top:18px;">
+      <input class="inp" id="a-email" type="email" name="username" autocomplete="username" placeholder="Admin email" required>
+      <div style="position:relative;">
+        <input class="inp" id="a-pass" type="password" name="password" autocomplete="current-password" placeholder="Password" required style="padding-right:48px;">
+        <i class="fa-solid fa-eye" style="position:absolute;right:16px;top:17px;color:#94a3b8;cursor:pointer;" onclick="A.togglePass(this)"></i>
+      </div>
+      <input class="inp" id="a-pin" type="password" inputmode="numeric" autocomplete="off" placeholder="PIN" required>
+      <div id="a-err" style="color:#ef4444;font-size:0.8rem;min-height:20px;margin:-4px 0 10px;text-align:center;"></div>
+      <button class="btn btn-primary btn-full" id="a-btn" type="submit"><i class="fa-solid fa-lock-open"></i> Login</button>
+    </form>
+    <div id="a-err2" style="color:#ef4444;font-size:0.8rem;margin-top:10px;"></div>
+  </div>
+</div>
+
+<!-- PANEL -->
+<div id="panel" class="hidden">
+
+<!-- DASHBOARD TAB -->
+<div id="tab-dash" class="tab show">
+  <div class="top-bar">
+    <div class="logo"><span style="color:var(--primary)">FF</span> Admin</div>
+    <button class="btn btn-outline" style="padding:8px 14px;font-size:0.8rem;margin-right:6px;" onclick="A.goTab('server')" title="Server"><i class="fa-solid fa-server"></i></button><button class="btn btn-outline" style="padding:8px 14px;font-size:0.8rem;" onclick="A.logout()"><i class="fa-solid fa-right-from-bracket"></i></button>
+  </div>
+  <div style="padding:20px 20px 8px;">
+    <h1 style="font-size:1.6rem;font-weight:800;">Hello Admin 👋</h1>
+    <p style="color:var(--sub);font-size:0.88rem;">Tournament manage karo</p>
+  </div>
+  <div class="stat-grid">
+    <div class="stat-box blue"><div class="stat-num" id="s-users">0</div><div class="stat-lbl">Users</div><i class="fa-solid fa-users stat-bg-icon"></i></div>
+    <div class="stat-box green"><div class="stat-num" id="s-matches">0</div><div class="stat-lbl">Matches</div><i class="fa-solid fa-gamepad stat-bg-icon"></i></div>
+  </div>
+  <div class="section-h">Quick Actions</div>
+  <div class="menu-grid">
+    <div class="menu-btn" onclick="A.showMatchModal()">
+      <div class="menu-btn-icon" style="background:#0ea5e9;"><i class="fa-solid fa-plus"></i></div>
+      <div class="menu-btn-lbl">New Match</div>
+    </div>
+    <div class="menu-btn" onclick="A.showNotifModal()">
+      <div class="menu-btn-icon" style="background:#f59e0b;"><i class="fa-solid fa-bell"></i></div>
+      <div class="menu-btn-lbl">Broadcast</div>
+    </div>
+    <div class="menu-btn" onclick="A.showCatModal()">
+      <div class="menu-btn-icon" style="background:#8b5cf6;"><i class="fa-solid fa-tags"></i></div>
+      <div class="menu-btn-lbl">Categories</div>
+    </div>
+    <div class="menu-btn" onclick="A.showSettingsModal()">
+      <div class="menu-btn-icon" style="background:#64748b;"><i class="fa-solid fa-gear"></i></div>
+      <div class="menu-btn-lbl">Settings</div>
+    </div>
+    <div class="menu-btn" onclick="A.goTab('dbm')" style="position:relative;">
+      <div class="menu-btn-icon" style="background:#0891b2;"><i class="fa-solid fa-database"></i></div>
+      <div class="menu-btn-lbl">User DB Manager</div>
+      <span style="position:absolute;top:8px;right:8px;background:#f59e0b;color:#fff;font-size:0.55rem;padding:2px 6px;border-radius:8px;font-weight:800;">SOON</span>
+    </div>
+    <div class="menu-btn" onclick="A.goTab('chat')" style="position:relative;">
+      <div class="menu-btn-icon" style="background:#f43f5e;"><i class="fa-solid fa-comments"></i></div>
+      <div class="menu-btn-lbl">Chat Moderation</div>
+    </div>
+    <div class="menu-btn" onclick="A.goTab('backup')" style="position:relative;">
+      <div class="menu-btn-icon" style="background:#059669;"><i class="fa-solid fa-cloud-arrow-down"></i></div>
+      <div class="menu-btn-lbl">Backup / Restore</div>
+    </div>
+    <div class="menu-btn" onclick="A.goTab('bot')" style="position:relative;">
+      <div class="menu-btn-icon" style="background:#7c3aed;"><i class="fa-solid fa-robot"></i></div>
+      <div class="menu-btn-lbl">Fampay Bot</div>
+      <span id="bot-dot" class="bot-dot"></span>
+    </div>
+    <div class="menu-btn" onclick="A.goTab('data')" style="position:relative;">
+      <div class="menu-btn-icon" style="background:#e11d48;"><i class="fa-solid fa-trash-can"></i></div>
+      <div class="menu-btn-lbl">Data Delete</div>
+    </div>
+    <div class="menu-btn" onclick="A.goTab('reports')" style="position:relative;">
+      <div class="menu-btn-icon" style="background:#dc2626;"><i class="fa-solid fa-flag"></i></div>
+      <div class="menu-btn-lbl">Reports</div>
+      <span id="rep-badge" style="position:absolute;top:8px;right:8px;background:#dc2626;color:#fff;font-size:0.6rem;padding:2px 7px;border-radius:8px;font-weight:800;display:none;">0</span>
+    </div>
+  </div>
+</div>
+
+<!-- MATCHES TAB -->
+<div id="tab-matches" class="tab">
+  <div class="top-bar"><h2 style="font-size:1.1rem;font-weight:800;">All Matches</h2></div>
+  <div class="page-pad" id="match-list" style="padding-top:16px;"></div>
+  <div class="fab" onclick="A.showMatchModal()"><i class="fa-solid fa-plus"></i></div>
+</div>
+
+<!-- FINANCE TAB -->
+<div id="tab-finance" class="tab">
+  <div class="top-bar">
+    <h2 style="font-size:1.1rem;font-weight:800;">Wallet Requests</h2>
+    <button class="btn btn-outline" style="padding:8px 14px;font-size:0.8rem;" onclick="A.refreshFinance()"><i class="fa-solid fa-rotate"></i></button>
+  </div>
+  <div class="fin-summary">
+    <div class="fin-sum-box" style="background:linear-gradient(135deg,#10b981,#34d399);">
+      <div class="fin-sum-num" id="fs-dep">0</div><div class="fin-sum-lbl">Pending Deposits</div><div class="fin-sum-amt" id="fs-dep-amt">₹0</div>
+    </div>
+    <div class="fin-sum-box" style="background:linear-gradient(135deg,#ef4444,#f87171);">
+      <div class="fin-sum-num" id="fs-wd">0</div><div class="fin-sum-lbl">Pending Withdrawals</div><div class="fin-sum-amt" id="fs-wd-amt">₹0</div>
+    </div>
+  </div>
+  <div class="seg" style="margin:0 20px 10px;">
+    <button id="btn-dep" class="seg-btn on" onclick="A.loadFinance('deposit')"><i class="fa-solid fa-arrow-down"></i> Deposits <span class="seg-cnt" id="cnt-dep">0</span></button>
+    <button id="btn-wd" class="seg-btn" onclick="A.loadFinance('withdraw')"><i class="fa-solid fa-arrow-up"></i> Withdrawals <span class="seg-cnt" id="cnt-wd">0</span></button>
+  </div>
+  <div style="padding:0 20px 10px;">
+    <input id="fin-search" class="inp" style="margin:0 0 8px;" placeholder="🔍 Order # / UID / UTR search..." onkeyup="A.filterFinance(this.value)">
+    <div class="seg">
+      <button id="st-pending" class="seg-btn on" onclick="A.setFinStatus('pending')">⏳ Pending</button>
+      <button id="st-all" class="seg-btn" onclick="A.setFinStatus('all')">📜 All History</button>
+    </div>
+  </div>
+  <div class="page-pad" id="finance-list"></div>
+</div>
+
+<!-- USERS TAB -->
+<div id="tab-users" class="tab">
+  <div class="top-bar"><h2 style="font-size:1.1rem;font-weight:800;">Users</h2></div>
+  <div style="padding:16px 20px 8px;">
+    <input class="inp" style="margin:0;" placeholder="🔍 Name / UID / Phone search..." onkeyup="A.searchUsers(this.value)">
+  </div>
+  <div class="page-pad" id="user-list"></div>
+</div>
+
+<!-- DB MANAGER (admin only) -->
+<div id="tab-dbm" class="tab">
+  <div class="top-bar">
+    <h2 style="font-size:1.1rem;font-weight:800;"><i class="fa-solid fa-database" style="color:#0891b2;"></i> DB Manager</h2>
+    <button class="btn btn-outline" style="padding:6px 12px;font-size:0.78rem;" onclick="A.goTab('dash')"><i class="fa-solid fa-arrow-left"></i> Back</button>
+  </div>
+
+  <div style="padding:16px 20px 8px;">
+    <input id="dbm-search" class="inp" style="margin:0;" placeholder="🔍 User name ya UID se search..." onkeyup="A.dbmSearch(this.value)">
+    <div id="dbm-search-res" style="margin-top:10px;display:flex;flex-direction:column;gap:8px;"></div>
+  </div>
+
+  <div id="dbm-user-pane" class="page-pad hidden">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+        <div>
+          <div id="dbm-u-name" style="font-weight:800;font-size:0.95rem;"></div>
+          <div id="dbm-u-uid" style="font-size:0.7rem;color:var(--sub);word-break:break-all;"></div>
+        </div>
+        <button class="btn btn-outline" style="padding:6px 10px;font-size:0.72rem;" onclick="A.dbmCloseUser()">✕</button>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-weight:700;font-size:0.85rem;margin-bottom:10px;">User Document</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <button class="btn btn-outline" onclick="A.dbmDownloadUser()"><i class="fa-solid fa-download"></i> Download</button>
+        <button class="btn btn-outline" onclick="A.dbmUploadUser()"><i class="fa-solid fa-upload"></i> Upload/Replace</button>
+        <button class="btn btn-primary" onclick="A.dbmEditUser()"><i class="fa-solid fa-pen"></i> Edit JSON</button>
+        <button class="btn btn-danger" onclick="A.dbmDeleteUserCascade()"><i class="fa-solid fa-trash"></i> Delete + Cascade</button>
+      </div>
+      <div style="font-size:0.68rem;color:var(--sub);margin-top:8px;">Delete + Cascade = user doc + transactions + notifications + matches ke participants/takenSlots se hata diya jayega (register data fully remove).</div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:700;font-size:0.85rem;margin-bottom:10px;">User History (subcollection)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <button class="btn btn-outline" onclick="A.dbmHistDL('transactions','all')">📥 All Trx</button>
+        <button class="btn btn-outline" onclick="A.dbmHistUL('transactions')">📤 Upload Trx</button>
+        <button class="btn btn-outline" onclick="A.dbmHistDL('transactions','deposit')">📥 Deposit History</button>
+        <button class="btn btn-outline" onclick="A.dbmHistDL('transactions','withdraw')">📥 Withdraw History</button>
+        <button class="btn btn-outline" onclick="A.dbmHistDL('matchHistory','all')">📥 Match History</button>
+        <button class="btn btn-outline" onclick="A.dbmHistUL('matchHistory')">📤 Upload Match Hist</button>
+        <button class="btn btn-outline" onclick="A.dbmHistDL('notifications','all')">📥 Notifications</button>
+        <button class="btn btn-outline" onclick="A.dbmHistUL('notifications')">📤 Upload Notif</button>
+        <button class="btn btn-primary" onclick="A.dbmHistEdit('transactions')"><i class="fa-solid fa-pen"></i> Edit Trx</button>
+        <button class="btn btn-primary" onclick="A.dbmHistEdit('matchHistory')"><i class="fa-solid fa-pen"></i> Edit Match Hist</button>
+        <button class="btn btn-danger" onclick="A.dbmHistDel('transactions')">🗑 Clear Trx</button>
+        <button class="btn btn-danger" onclick="A.dbmHistDel('matchHistory')">🗑 Clear Match Hist</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-pad">
+    <div class="card">
+      <div style="font-weight:700;font-size:0.9rem;margin-bottom:10px;"><i class="fa-solid fa-globe"></i> Global Database</div>
+      <div style="font-size:0.72rem;color:var(--sub);margin-bottom:10px;">Pure collection ka kaam — download / upload / delete. ⚠️ Delete irreversible.</div>
+
+      <div style="font-weight:700;font-size:0.78rem;margin:10px 0 6px;">Users</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+        <button class="btn btn-outline" onclick="A.dbmAllDL('users')">📥 Download</button>
+        <button class="btn btn-outline" onclick="A.dbmAllUL('users')">📤 Upload</button>
+        <button class="btn btn-danger" onclick="A.dbmAllDel('users')">🗑 Delete All</button>
+      </div>
+
+      <div style="font-weight:700;font-size:0.78rem;margin:14px 0 6px;">Matches</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+        <button class="btn btn-outline" onclick="A.dbmAllDL('matches')">📥 Download</button>
+        <button class="btn btn-outline" onclick="A.dbmAllUL('matches')">📤 Upload</button>
+        <button class="btn btn-danger" onclick="A.dbmAllDel('matches')">🗑 Delete All</button>
+      </div>
+
+      <div style="font-weight:700;font-size:0.78rem;margin:14px 0 6px;">All Deposits (collectionGroup)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+        <button class="btn btn-outline" onclick="A.dbmCGDL('transactions','deposit')">📥 Download All Deposits</button>
+        <button class="btn btn-danger" onclick="A.dbmCGDel('transactions','deposit')">🗑 Delete All Deposits</button>
+      </div>
+
+      <div style="font-weight:700;font-size:0.78rem;margin:14px 0 6px;">All Withdrawals (collectionGroup)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+        <button class="btn btn-outline" onclick="A.dbmCGDL('transactions','withdraw')">📥 Download All Withdrawals</button>
+        <button class="btn btn-danger" onclick="A.dbmCGDel('transactions','withdraw')">🗑 Delete All Withdrawals</button>
+      </div>
+
+      <div style="font-weight:700;font-size:0.78rem;margin:14px 0 6px;">All Match History (collectionGroup)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+        <button class="btn btn-outline" onclick="A.dbmCGDL('matchHistory','all')">📥 Download</button>
+        <button class="btn btn-danger" onclick="A.dbmCGDel('matchHistory','all')">🗑 Delete All</button>
+      </div>
+
+      <div style="font-weight:700;font-size:0.78rem;margin:14px 0 6px;">Leaderboard</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+        <button class="btn btn-outline" onclick="A.dbmLBDL()">📥 Download</button>
+        <button class="btn btn-outline" onclick="A.dbmLBUL()">📤 Upload</button>
+        <button class="btn btn-danger" onclick="A.dbmLBReset()">🗑 Reset</button>
+      </div>
+
+      <div style="font-weight:700;font-size:0.78rem;margin:14px 0 6px;">Notifications (global)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+        <button class="btn btn-outline" onclick="A.dbmAllDL('notifications')">📥 Download</button>
+        <button class="btn btn-outline" onclick="A.dbmAllUL('notifications')">📤 Upload</button>
+        <button class="btn btn-danger" onclick="A.dbmAllDel('notifications')">🗑 Delete All</button>
+      </div>
+
+      <div style="font-weight:700;font-size:0.78rem;margin:14px 0 6px;">Categories</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+        <button class="btn btn-outline" onclick="A.dbmAllDL('categories')">📥 Download</button>
+        <button class="btn btn-outline" onclick="A.dbmAllUL('categories')">📤 Upload</button>
+        <button class="btn btn-danger" onclick="A.dbmAllDel('categories')">🗑 Delete All</button>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="dbm-file" accept=".json,application/json" style="display:none;">
+</div>
+
+<!-- JSON EDIT MODAL -->
+<div class="overlay" id="m-dbm-edit">
+  <div class="sheet">
+    <div class="sheet-title" id="dbm-edit-title">Edit JSON</div>
+    <textarea id="dbm-edit-area" class="inp" style="min-height:300px;font-family:monospace;font-size:0.78rem;"></textarea>
+    <div style="display:flex;gap:10px;margin-top:12px;">
+      <button class="btn btn-outline" style="flex:1;" onclick="A.closeModal('m-dbm-edit')">Cancel</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="A.dbmEditSave()">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHAT MODERATION TAB -->
+<div id="tab-chat" class="tab">
+  <div class="top-bar">
+    <h2 style="font-size:1.1rem;font-weight:800;"><i class="fa-solid fa-comments" style="color:#f43f5e;"></i> Chat Control</h2>
+    <button class="btn btn-outline" style="padding:6px 12px;font-size:0.78rem;" onclick="A.goTab('dash')"><i class="fa-solid fa-arrow-left"></i> Back</button>
+  </div>
+  <div style="display:flex;gap:8px;padding:14px 20px 6px;flex-wrap:wrap;">
+    <button class="btn btn-primary" style="flex:1;min-width:120px;" onclick="A.chatSection='world'; A.loadChatMod()">World Chat</button>
+    <button class="btn btn-outline" style="flex:1;min-width:120px;" onclick="A.chatSection='groups'; A.loadChatMod()">Groups</button>
+    <button class="btn btn-outline" style="flex:1;min-width:120px;" onclick="A.chatSection='dms'; A.loadChatMod()">Recent DMs</button>
+  </div>
+  <div style="padding:0 20px 8px;">
+    <input class="inp" style="margin:0;" id="cm-search" placeholder="🔍 Search message text / uid..." oninput="A.filterChatMod(this.value)">
+    <div style="display:flex;gap:8px;margin-top:10px;font-size:0.78rem;">
+      <button class="btn btn-outline" style="flex:1;padding:8px;" onclick="A.pinChatBanner()"><i class="fa-solid fa-thumbtack"></i> Pin Banner</button>
+      <button class="btn btn-outline" style="flex:1;padding:8px;" onclick="A.clearWorldChat()"><i class="fa-solid fa-trash"></i> Clear World</button>
+      <button class="btn btn-outline" style="flex:1;padding:8px;" onclick="A.chatSettings()"><i class="fa-solid fa-sliders"></i> Rules</button>
+      <button class="btn btn-outline" style="flex:1;padding:8px;" onclick="A.editBannedWords()"><i class="fa-solid fa-ban"></i> Banned Words</button>
+    </div>
+  </div>
+  <div class="page-pad" id="chat-mod-list" style="padding-top:12px;"></div>
+</div>
+
+<!-- BACKUP TAB -->
+<div id="tab-backup" class="tab">
+  <div class="top-bar">
+    <h2 style="font-size:1.1rem;font-weight:800;"><i class="fa-solid fa-cloud-arrow-down" style="color:#059669;"></i> Backup / Restore</h2>
+    <button class="btn btn-outline" style="padding:6px 12px;font-size:0.78rem;" onclick="A.goTab('dash')"><i class="fa-solid fa-arrow-left"></i> Back</button>
+  </div>
+  <div class="page-pad" style="padding-top:16px;">
+    <div class="card">
+      <div class="card-h">Naya backup</div>
+      <p class="muted">Server par save hota hai, yahin se download bhi kar sakte ho. Kuch collections chuno ya sab.</p>
+      <div id="bk-cols" class="chips"><span class="muted">Loading…</span></div>
+      <label class="chk"><input type="checkbox" id="bk-sub" checked> Subcollections bhi (transactions, notifications…)</label>
+      <button class="btn btn-success btn-full" onclick="A.bkCreate()"><i class="fa-solid fa-cloud-arrow-down"></i> Backup banao</button>
+    </div>
+    <div class="card">
+      <div class="card-h">Saved backups</div>
+      <div id="bk-list"><span class="muted">Loading…</span></div>
+      <p class="muted" id="bk-dir" style="margin-top:10px;"></p>
+    </div>
+    <div class="card">
+      <div class="card-h">File se restore</div>
+      <p class="muted">.ffbak.gz ya purana .json backup. Existing docs overwrite honge.</p>
+      <input type="file" id="restore-file" accept=".gz,.json" class="inp">
+      <button class="btn btn-danger btn-full" onclick="A.bkUploadRestore()"><i class="fa-solid fa-upload"></i> Upload & Restore</button>
+    </div>
+    <div class="card">
+      <div class="card-h">Auto backup</div>
+      <select id="bk-int" class="inp">
+        <option value="0">Off</option><option value="6">Har 6 ghante</option><option value="12">Har 12 ghante</option>
+        <option value="24">Roz (24h)</option><option value="168">Har hafte</option>
+      </select>
+      <input type="number" id="bk-keep" class="inp" min="1" max="100" placeholder="Kitne auto-backup rakhne hain (default 10)">
+      <button class="btn btn-primary btn-full" onclick="A.bkSaveSchedule()">Save schedule</button>
+      <div id="bk-last" class="muted" style="margin-top:8px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DATA DELETE TAB -->
+<div id="tab-data" class="tab">
+  <div class="top-bar">
+    <h2 style="font-size:1.1rem;font-weight:800;"><i class="fa-solid fa-trash-can" style="color:#e11d48;"></i> Data Delete</h2>
+    <button class="btn btn-outline" style="padding:6px 12px;font-size:0.78rem;" onclick="A.goTab('dash')"><i class="fa-solid fa-arrow-left"></i> Back</button>
+  </div>
+  <div class="page-pad" style="padding-top:16px;">
+    <div class="warn"><i class="fa-solid fa-triangle-exclamation"></i> Har delete se pehle PIN lagta hai aur (default) auto-backup banta hai. Firebase <b>login accounts</b> yahan se delete nahi hote — sirf Firestore data.</div>
+    <div class="card">
+      <div class="card-h">Collections</div>
+      <div id="dd-cols"><span class="muted">Loading…</span></div>
+    </div>
+    <div class="card">
+      <div class="card-h">Purana data saaf karo</div>
+      <p class="muted">Jaise world_messages jo 30 din se purane hain.</p>
+      <select id="dd-old-col" class="inp"></select>
+      <input class="inp" id="dd-old-field" placeholder="Date field (e.g. createdAt)" value="createdAt">
+      <select id="dd-old-type" class="inp"><option value="ms">Field number (milliseconds)</option><option value="ts">Field Firestore Timestamp</option></select>
+      <input class="inp" id="dd-old-days" type="number" min="0" placeholder="Kitne din se purana (e.g. 30)">
+      <button class="btn btn-danger btn-full" onclick="A.ddOlder()">Purane docs delete karo</button>
+    </div>
+    <div class="card">
+      <div class="card-h">Ek document delete</div>
+      <input class="inp" id="dd-doc-path" placeholder="users/abc123  ya  users/abc123/transactions/xyz">
+      <label class="chk"><input type="checkbox" id="dd-doc-sub" checked> Uski subcollections bhi</label>
+      <button class="btn btn-danger btn-full" onclick="A.ddDoc()">Document delete karo</button>
+    </div>
+  </div>
+</div>
+
+<!-- FAMPAY BOT TAB -->
+<div id="tab-bot" class="tab">
+  <div class="top-bar">
+    <h2 style="font-size:1.1rem;font-weight:800;"><i class="fa-solid fa-robot" style="color:#7c3aed;"></i> Fampay Bot</h2>
+    <button class="btn btn-outline" style="padding:6px 12px;font-size:0.78rem;" onclick="A.goTab('dash')"><i class="fa-solid fa-arrow-left"></i> Back</button>
+  </div>
+  <div class="page-pad" style="padding-top:16px;">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div class="card-h" style="margin:0;">Status</div><span id="bot-pill" class="pill">…</span>
+      </div>
+      <div id="bot-kv"></div>
+      <div class="btn-row" style="margin-top:12px;">
+        <button class="btn btn-success" style="flex:1;" onclick="A.botAct('start')"><i class="fa-solid fa-play"></i> Start</button>
+        <button class="btn btn-danger" style="flex:1;" onclick="A.botAct('stop')"><i class="fa-solid fa-stop"></i> Stop</button>
+        <button class="btn btn-outline" style="flex:1;" onclick="A.botAct('poll')"><i class="fa-solid fa-rotate"></i> Abhi</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h">Settings</div>
+      <label class="lbl">Poll interval (seconds, min 5)</label>
+      <input class="inp" id="bot-int" type="number" min="5" max="3600">
+      <label class="lbl">Gmail search query</label>
+      <input class="inp" id="bot-q">
+      <button class="btn btn-primary btn-full" onclick="A.botSave()">Save settings</button>
+    </div>
+    <div class="card">
+      <div class="card-h">Render env check</div>
+      <div id="bot-env"></div>
+      <p class="muted" style="margin-top:8px;">Values yahan kabhi nahi dikhti — sirf set hai ya nahi.</p>
+    </div>
+    <div class="card">
+      <div class="card-h">Unclaimed Fampay deposits</div>
+      <p class="muted">Bot ne save kiye, user ne abhi claim nahi kiye.</p>
+      <div id="bot-deps"><span class="muted">Loading…</span></div>
+    </div>
+    <div class="card">
+      <div class="card-h">Live log</div>
+      <div id="bot-log" class="logbox"></div>
+      <button class="btn btn-outline btn-full" style="margin-top:10px;" onclick="A.botClear()"><i class="fa-solid fa-eraser"></i> Saare mails dobara scan karo</button>
+    </div>
+  </div>
+</div>
+
+<!-- SERVER TAB -->
+<div id="tab-server" class="tab">
+  <div class="top-bar">
+    <h2 style="font-size:1.1rem;font-weight:800;"><i class="fa-solid fa-server" style="color:#475569;"></i> Server</h2>
+    <button class="btn btn-outline" style="padding:6px 12px;font-size:0.78rem;" onclick="A.goTab('dash')"><i class="fa-solid fa-arrow-left"></i> Back</button>
+  </div>
+  <div class="page-pad" style="padding-top:16px;">
+    <div class="card"><div class="card-h">Status</div><div id="srv-kv"><span class="muted">Loading…</span></div></div>
+    <div class="card"><div class="card-h">Env variables</div><div id="srv-env"></div>
+      <p class="muted" style="margin-top:8px;">Email / password / PIN badalne ke liye Render → Environment mein badlo. Badalte hi purane sab login band ho jaate hain.</p></div>
+    <button class="btn btn-danger btn-full" onclick="A.logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+  </div>
+</div>
+
+<!-- REPORTS TAB -->
+<div id="tab-reports" class="tab">
+  <div class="top-bar">
+    <h2 style="font-size:1.1rem;font-weight:800;"><i class="fa-solid fa-flag" style="color:#dc2626;"></i> User Reports</h2>
+    <button class="btn btn-outline" style="padding:6px 12px;font-size:0.78rem;" onclick="A.goTab('dash')"><i class="fa-solid fa-arrow-left"></i> Back</button>
+  </div>
+  <div style="display:flex;gap:8px;padding:14px 20px 6px;">
+    <button class="btn btn-primary" style="flex:1;" onclick="A.loadReports('open')">Open</button>
+    <button class="btn btn-outline" style="flex:1;" onclick="A.loadReports('resolved')">Resolved</button>
+  </div>
+  <div class="page-pad" id="reports-list" style="padding-top:12px;"></div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="nav-btn active" id="nav-dash" onclick="A.goTab('dash')"><i class="fa-solid fa-house"></i><span>Home</span></div>
+  <div class="nav-btn" id="nav-matches" onclick="A.goTab('matches')"><i class="fa-solid fa-trophy"></i><span>Matches</span></div>
+  <div class="nav-btn" id="nav-finance" onclick="A.goTab('finance')" style="position:relative;"><i class="fa-solid fa-wallet"></i><span>Wallet</span><b id="nav-fin-badge" class="nav-badge" style="display:none;">0</b></div>
+  <div class="nav-btn" id="nav-users" onclick="A.goTab('users')"><i class="fa-solid fa-users"></i><span>Users</span></div>
+</div>
+
+</div><!-- end panel -->
+
+<!-- ===== MODALS ===== -->
+
+<!-- CATEGORIES -->
+<div class="overlay" id="m-cat">
+  <div class="sheet">
+    <div class="sheet-title">Game Categories</div>
+    <div id="cat-chips" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;"></div>
+    <div style="display:flex;gap:10px;">
+      <input class="inp" id="cat-new" style="margin:0;flex:1;" placeholder="New category name">
+      <button class="btn btn-primary" onclick="A.addCat()">Add</button>
+    </div>
+    <button class="btn btn-outline btn-full" onclick="A.closeModal('m-cat')" style="margin-top:16px;">Close</button>
+  </div>
+</div>
+
+<!-- NOTIFICATION -->
+<div class="overlay" id="m-notif">
+  <div class="sheet">
+    <div class="sheet-title">Send Notification</div>
+    <div class="lbl">Title</div><input class="inp" id="n-title" placeholder="Notification title">
+    <div class="lbl">Message</div><textarea class="inp" id="n-msg" rows="3" placeholder="Message..."></textarea>
+    <div class="btn-row">
+      <button class="btn btn-outline" style="flex:1;" onclick="A.closeModal('m-notif')">Cancel</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="A.sendNotif()">Send to All</button>
+    </div>
+
+    <div style="border-top:1px dashed var(--border);padding-top:16px;margin-top:18px;">
+      <div style="font-weight:800;color:var(--success);margin-bottom:12px;font-size:0.92rem;"><i class="fa-solid fa-money-bill-transfer"></i> Send Cash to a User</div>
+      <div class="lbl">User UID</div><input class="inp" id="cash-uid" placeholder="User UID">
+      <div class="lbl">Balance Type</div>
+      <select class="inp" id="cash-type" style="background:#fff;">
+        <option value="deposit">Deposit Balance</option>
+        <option value="withdraw">Withdrawal Balance</option>
+      </select>
+      <div class="lbl">Amount ₹ (use - to deduct)</div><input class="inp" id="cash-amt" type="number" placeholder="Amount">
+      <button class="btn btn-success btn-full" onclick="A.sendCash()">Send Cash</button>
+      <div style="font-size:0.72rem;color:var(--sub);margin-top:8px;line-height:1.5;">
+        ℹ️ Positive amount = turant user ke balance mein add hoga + notification jayega.<br>
+        Negative amount = turant deduct hoga.
+      </div>
+    </div>
+
+    <div style="border-top:1px dashed var(--border);padding-top:16px;margin-top:18px;">
+      <div style="font-weight:800;color:var(--danger);margin-bottom:12px;font-size:0.92rem;"><i class="fa-solid fa-trash"></i> Manage / Delete Broadcasts</div>
+      <div id="notif-manage-list" style="max-height:200px;overflow-y:auto;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="overlay" id="m-settings">
+  <div class="sheet">
+    <div class="sheet-title">App Settings</div>
+
+    <img id="logo-img" style="display:none;" src="">
+    <span id="logo-emoji" style="display:none;"></span>
+    <div id="logo-msg" style="display:none;"></div>
+    <input type="file" id="logo-inp" style="display:none;">
+
+    <div style="border-top:1px solid var(--border);margin-bottom:16px;"></div>
+
+    <div class="lbl">Banner Image URLs (multi-banner slider — auto rotates every 5s)</div>
+    <div id="banner-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px;"></div>
+    <button class="btn btn-outline" style="width:100%;padding:10px;font-size:0.82rem;margin-bottom:8px;" onclick="A.addBannerRow()"><i class="fa-solid fa-plus"></i> Add Banner URL</button>
+
+    <div class="lbl">Notice / Announcement</div>
+    <input class="inp" id="s-notice" placeholder="App notice text...">
+
+    <div class="lbl">Support Number (shown to banned users)</div>
+    <input class="inp" id="s-support" placeholder="e.g. +91 9876543210">
+
+    <div style="border-top:1px dashed var(--border);padding-top:16px;margin-bottom:4px;">
+      <div style="font-weight:800;color:var(--primary);margin-bottom:14px;font-size:0.92rem;"><i class="fa-solid fa-indian-rupee-sign"></i> UPI Settings</div>
+      <div class="lbl">UPI ID</div><input class="inp" id="s-upi" placeholder="yourname@upi">
+      <div class="lbl">QR Code — Upload Photo</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+        <div class="logo-box" id="qr-box" onclick="document.getElementById('qr-inp').click()" style="border-radius:12px;">
+          <img id="qr-img" src="">
+          <span id="qr-emoji">📷</span>
+          <div class="logo-box-label">QR</div>
+        </div>
+        <button class="btn btn-outline" style="flex:1;padding:12px;font-size:0.82rem;" onclick="document.getElementById('qr-inp').click()">Upload QR Image</button>
+      </div>
+      <input type="file" id="qr-inp" accept="image/*" style="display:none;" onchange="A.selectQr(this)">
+      <div id="qr-msg" style="font-size:0.75rem;font-weight:700;min-height:18px;margin-bottom:10px;"></div>
+    </div>
+
+    <div style="border-top:1px dashed var(--border);padding-top:16px;margin-bottom:4px;">
+      <div style="font-weight:800;color:#f59e0b;margin-bottom:14px;font-size:0.92rem;"><i class="fa-brands fa-bitcoin"></i> Crypto Deposit</div>
+      <div class="lbl">Coin Name (e.g. USDT TRC20)</div><input class="inp" id="s-coin" placeholder="USDT (TRC20)">
+      <div class="lbl">Wallet Address</div><input class="inp" id="s-addr" placeholder="Wallet address...">
+    </div>
+
+    <div style="border-top:1px dashed var(--border);padding-top:16px;margin-bottom:4px;">
+      <div style="font-weight:800;color:#10b981;margin-bottom:14px;font-size:0.92rem;"><i class="fa-brands fa-whatsapp"></i> WhatsApp Support</div>
+      <div class="lbl">Name / Label (shown to users)</div>
+      <input class="inp" id="s-wa-name" placeholder="e.g. WhatsApp Support">
+      <div class="lbl">Number or Link (with country code, e.g. +91 9876543210 or https://wa.me/...)</div>
+      <input class="inp" id="s-wa-link" placeholder="+91 9876543210">
+    </div>
+
+    <div style="border-top:1px dashed var(--border);padding-top:16px;margin-bottom:4px;">
+      <div style="font-weight:800;color:#0ea5e9;margin-bottom:14px;font-size:0.92rem;"><i class="fa-brands fa-telegram"></i> Telegram Support</div>
+      <div class="lbl">Name / Label (shown to users)</div>
+      <input class="inp" id="s-tg-name" placeholder="e.g. Telegram Channel">
+      <div class="lbl">Username or Link (e.g. @MyChannel or https://t.me/MyChannel)</div>
+      <input class="inp" id="s-tg-link" placeholder="@MyChannel">
+    </div>
+
+    <div class="btn-row" style="margin-top:6px;">
+      <button class="btn btn-outline" style="flex:1;" onclick="A.closeModal('m-settings')">Close</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="A.saveSettings()">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW MATCH -->
+<div class="overlay" id="m-match">
+  <div class="sheet">
+    <div class="sheet-title">Match Banao</div>
+    <div class="lbl">Match Title</div><input class="inp" id="m-title" placeholder="e.g. Bermuda Solo #1">
+    <div style="display:flex;gap:12px;">
+      <div style="flex:1;"><div class="lbl">Entry Fee ₹</div><input class="inp" id="m-fee" type="number" placeholder="0"></div>
+      <div style="flex:1;"><div class="lbl">Prize / Per Kill ₹</div><input class="inp" id="m-prize" type="number" placeholder="0"></div>
+    </div>
+
+    <div class="lbl">Match Type</div>
+    <select class="inp" id="m-match-type" style="background:#fff;" onchange="A.onMatchTypeChange()">
+      <option value="win_prize">Win Prize Match</option>
+      <option value="per_kill">Per Kill Match</option>
+      <option value="team_win">Team Win Match</option>
+    </select>
+
+    <div id="team-mode-row" class="hidden">
+      <div class="lbl">Team Mode</div>
+      <select class="inp" id="m-team-mode" style="background:#fff;">
+        <option value="BR Duo">BR Duo</option>
+        <option value="BR Squad">BR Squad</option>
+        <option value="Clash Squad">Clash Squad</option>
+        <option value="Lone Wolf">Lone Wolf</option>
+      </select>
+    </div>
+
+    <div class="lbl">Map</div>
+    <select class="inp" id="m-map" style="background:#fff;">
+      <optgroup label="Bermuda">
+        <option>Bermuda</option>
+        <option>Bermuda Remastered</option>
+      </optgroup>
+      <option>Purgatory</option>
+      <option>Kalahari</option>
+      <option>Alpine</option>
+      <option>NexTerra</option>
+      <option>Solara</option>
+    </select>
+
+    <div style="display:flex;gap:12px;">
+      <div style="flex:1;"><div class="lbl">Start Time</div><input class="inp" id="m-time" type="datetime-local" style="background:#fff;"></div>
+      <div style="flex:1;"><div class="lbl">Total Slots</div><input class="inp" id="m-slots" type="number" placeholder="48"></div>
+    </div>
+
+    <div class="lbl">Banner Image URL</div><input class="inp" id="m-img" placeholder="https://...">
+
+    <div class="btn-row">
+      <button class="btn btn-outline" style="flex:1;" onclick="A.closeModal('m-match')">Cancel</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="A.createMatch()">🚀 Publish</button>
+    </div>
+  </div>
+</div>
+
+<!-- MATCH PLAYERS -->
+<div class="overlay" id="m-players">
+  <div class="sheet">
+    <div class="sheet-title" id="players-title">Joined Players</div>
+    <input type="hidden" id="players-mid">
+    <input type="hidden" id="players-match-type">
+    <input type="hidden" id="players-prize">
+    <input type="hidden" id="players-team-mode">
+
+    <div id="win-prize-section" class="hidden" style="background:#eef2ff;border-radius:14px;padding:14px;margin-bottom:14px;">
+      <div style="font-weight:800;font-size:0.88rem;color:var(--primary);margin-bottom:12px;">🏆 Win Prize — Winners Select Karo</div>
+      <div class="lbl">1st Winner</div>
+      <select class="inp" id="wp-1st" style="background:#fff;"><option value="">-- Select --</option></select>
+      <div class="lbl">2nd Winner</div>
+      <select class="inp" id="wp-2nd" style="background:#fff;"><option value="">-- Select --</option></select>
+      <div class="lbl">3rd Winner</div>
+      <select class="inp" id="wp-3rd" style="background:#fff;"><option value="">-- Select --</option></select>
+      <div class="lbl">Total Prize Amount ₹</div>
+      <input class="inp" id="wp-amount" type="number" placeholder="e.g. 500">
+      <button class="btn btn-success btn-full" onclick="A.distributeWinPrize()"><i class="fa-solid fa-trophy"></i> Confirm & Credit Winners</button>
+    </div>
+
+    <div id="per-kill-section" class="hidden" style="background:#f0fdf4;border-radius:14px;padding:14px;margin-bottom:14px;">
+      <div style="font-weight:800;font-size:0.88rem;color:var(--success);margin-bottom:8px;">🎯 Per Kill — Kill Count Enter Karo</div>
+      <div style="font-size:0.78rem;color:var(--sub);margin-bottom:12px;">Per Kill ₹ amount match prize field se aayega. Har player ka kill enter karo, phir "Credit All" karo.</div>
+      <div id="kill-entry-list"></div>
+      <button class="btn btn-success btn-full" style="margin-top:8px;" onclick="A.creditKills()"><i class="fa-solid fa-coins"></i> Calculate & Credit All</button>
+    </div>
+
+    <div id="team-win-section" class="hidden" style="background:#fef3c7;border-radius:14px;padding:14px;margin-bottom:14px;">
+      <div style="font-weight:800;font-size:0.88rem;color:#92400e;margin-bottom:8px;">👥 Team Win — Winning Team Select Karo</div>
+      <div style="font-size:0.78rem;color:var(--sub);margin-bottom:12px;" id="team-win-info"></div>
+      <div id="team-player-list"></div>
+      <button class="btn btn-success btn-full" style="margin-top:8px;" onclick="A.creditTeamWin()"><i class="fa-solid fa-users"></i> Credit Winning Team</button>
+    </div>
+
+    <div id="players-list" style="max-height:40vh;overflow-y:auto;"></div>
+    <div id="booya-section" style="background:#fef2f2;border-radius:14px;padding:14px;margin-top:14px;border:1px solid #fecaca;">
+      <div style="font-weight:800;font-size:0.88rem;color:#b91c1c;margin-bottom:8px;">🔥 Booya Winners (Free)</div>
+      <div style="font-size:0.72rem;color:var(--sub);margin-bottom:10px;">Jisne booya liya unhe tick karo — match history me unka naam dikhega.</div>
+      <div id="booya-player-list"></div>
+      <button class="btn btn-danger btn-full" style="margin-top:8px;" onclick="A.saveBooya()"><i class="fa-solid fa-fire"></i> Save Booya List</button>
+    </div>
+    <button class="btn btn-outline btn-full" onclick="A.closeModal('m-players')" style="margin-top:14px;">Close</button>
+  </div>
+</div>
+
+<!-- ROOM CREDS -->
+<div class="overlay" id="m-room">
+  <div class="sheet">
+    <div class="sheet-title">Room Credentials</div>
+    <input type="hidden" id="room-mid">
+    <div class="lbl">Room ID</div><input class="inp" id="room-id" placeholder="Room ID">
+    <div class="lbl">Password</div><input class="inp" id="room-pass" placeholder="Password">
+    <div class="btn-row">
+      <button class="btn btn-outline" style="flex:1;" onclick="A.closeModal('m-room')">Cancel</button>
+      <button class="btn btn-success" style="flex:1;" onclick="A.saveRoom()">Update</button>
+    </div>
+  </div>
+</div>
+
+<!-- USER MANAGE -->
+<div class="overlay" id="m-user">
+  <div class="sheet">
+    <div class="sheet-title" id="u-title">User</div>
+    <input type="hidden" id="u-id">
+
+    <div id="u-details" style="background:#eef2ff;padding:14px;border-radius:14px;margin-bottom:14px;font-size:0.82rem;line-height:1.7;"></div>
+
+    <div style="background:#f1f5f9;padding:14px;border-radius:14px;margin-bottom:14px;">
+      <div class="lbl">Send / Adjust Cash (+ add / - deduct)</div>
+      <select class="inp" id="u-bal-type" style="background:#fff;margin-bottom:10px;">
+        <option value="deposit">Deposit Balance</option>
+        <option value="withdraw">Withdrawal Balance</option>
+      </select>
+      <div style="display:flex;gap:10px;">
+        <input class="inp" id="u-bal" type="number" style="margin:0;flex:1;background:#fff;" placeholder="Amount ₹">
+        <button class="btn btn-primary" onclick="A.adjustBal()">Save</button>
+      </div>
+    </div>
+
+    <div style="background:#eff6ff;border:1px solid #bfdbfe;padding:14px;border-radius:14px;margin-bottom:14px;">
+      <div style="font-weight:800;font-size:0.82rem;color:#1d4ed8;margin-bottom:8px;"><i class="fa-solid fa-circle-check"></i> Verification (Blue Tick)</div>
+      <div id="u-verify-info" style="font-size:0.8rem;margin-bottom:10px;color:var(--sub);">Sirf admin add ya remove kar sakta hai. Promoters ko diya jata hai.</div>
+      <div class="btn-row">
+        <button class="btn btn-primary" style="flex:1;" onclick="A.verifyUser()"><i class="fa-solid fa-check"></i> Verify</button>
+        <button class="btn btn-outline" style="flex:1;" onclick="A.unverifyUser()"><i class="fa-solid fa-xmark"></i> Remove Verify</button>
+      </div>
+    </div>
+
+    <div style="background:#fff7ed;border:1px solid #fed7aa;padding:14px;border-radius:14px;margin-bottom:14px;">
+      <div style="font-weight:800;font-size:0.82rem;color:var(--warning);margin-bottom:8px;"><i class="fa-solid fa-ban"></i> Ban Control</div>
+      <div id="u-ban-info" style="font-size:0.8rem;margin-bottom:10px;"></div>
+      <div class="lbl">Duration</div>
+      <select class="inp" id="u-ban-dur" style="background:#fff;margin-bottom:10px;">
+        <option value="1">1 Hour</option>
+        <option value="24">1 Day</option>
+        <option value="168">1 Week</option>
+        <option value="720">1 Month</option>
+        <option value="0">Permanent</option>
+      </select>
+      <div class="btn-row">
+        <button class="btn btn-danger" style="flex:1;" onclick="A.banUser()"><i class="fa-solid fa-ban"></i> Ban</button>
+        <button class="btn btn-success" style="flex:1;" onclick="A.unbanUser()"><i class="fa-solid fa-check"></i> Unban</button>
+      </div>
+    </div>
+
+    <div style="background:#f8fafc;border:1px solid var(--border);padding:14px;border-radius:14px;margin-bottom:14px;">
+      <div style="font-weight:800;font-size:0.85rem;margin-bottom:10px;">📋 Transaction History</div>
+      <div id="u-trx" style="max-height:180px;overflow-y:auto;"></div>
+    </div>
+
+    <button class="btn btn-danger btn-full" onclick="A.deleteUser()" style="margin-bottom:12px;">🗑 Delete Account</button>
+    <button class="btn btn-outline btn-full" onclick="A.closeModal('m-user')">Close</button>
+  </div>
+</div>
+
+<!-- JOB BAR -->
+<div id="job-bar" class="job-bar hidden"><i class="fa-solid fa-spinner fa-spin" id="job-ic"></i><span id="job-txt"></span></div>
+
+<!-- DANGER / PIN MODAL -->
+<div class="overlay" id="m-danger">
+  <div class="sheet">
+    <div class="sheet-title" id="dg-title">Confirm</div>
+    <p id="dg-text" class="muted" style="margin:-8px 0 14px;"></p>
+    <div id="dg-typed-wrap"><label class="lbl">Confirm ke liye type karo: <b id="dg-typed-want"></b></label><input class="inp" id="dg-typed" autocomplete="off"></div>
+    <label class="chk" id="dg-bk-wrap"><input type="checkbox" id="dg-bk" checked> <span id="dg-bk-lbl">Pehle auto-backup lo (recommended)</span></label>
+    <input class="inp" id="dg-pin" type="password" inputmode="numeric" autocomplete="off" placeholder="Admin PIN">
+    <div class="btn-row">
+      <button class="btn btn-outline" style="flex:1;" id="dg-cancel">Cancel</button>
+      <button class="btn btn-danger" style="flex:1;" id="dg-ok">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
