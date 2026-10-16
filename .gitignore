@@ -1,0 +1,6 @@
+.env
+backups/*
+!backups/.gitkeep
+__pycache__/
+*.pyc
+serviceAccount*.json
